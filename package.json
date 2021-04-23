@@ -1,0 +1,69 @@
+{
+  "name": "react-error-catch",
+  "version": "1.0.0",
+  "description": "react error catch!",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "[\"react\"",
+    "\"error\"",
+    "\"catch\"]"
+  ],
+  "author": {
+    "name": "xian_107",
+    "email": "351824751@qq.com.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xian107/react-error-catch/issues"
+  },
+  "homepage": "https://github.com/xian107/react-error-catch#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xian107/react-error-catch.git"
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/jest": "^26.0.15",
+    "@types/node": "^12.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "tslib": "^2.0.1",
+    "typescript": "^4.1.2"
+  },
+  "scripts": {
+    "build": "rollup -c && bash control.sh build",
+    "build:dev": "npm run build && NODE_ENV=development",
+    "build:pro": "npm run build && NODE_ENV=production",
+    "example": "cd example/ && yarn install && yarn start"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@rollup/plugin-babel": "^5.2.1",
+    "@rollup/plugin-commonjs": "^15.0.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@rollup/plugin-typescript": "^5.0.2"
+  }
+}
