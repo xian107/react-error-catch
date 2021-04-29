@@ -78,6 +78,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
             // filter the mutiple items
             var localtime = error.localtime, caught_event = error.caught_event;
             var label = localtime + "-" + caught_event;
+            error.localtime = _this._getTime(localtime);
             _this.state.maps.set(label, error);
             // post by max
             // 1 means post immediately
@@ -118,7 +119,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 var obj = {
                     caught_event: 'onerror',
                     msg: message,
-                    localtime: _this.getTime(),
+                    localtime: Date.now(),
                     stack: "Error: at " + filename + " " + lineno + ":" + colno,
                     event_type: type,
                     is_trusted: isTrusted ? 1 : 0,
@@ -144,7 +145,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 var obj = {
                     caught_event: 'onunhandledrejection',
                     msg: msg,
-                    localtime: _this.getTime(),
+                    localtime: Date.now(),
                     stack: stack,
                     event_type: type,
                     is_trusted: isTrusted ? 1 : 0,
@@ -157,17 +158,10 @@ var ErrorBoundary = /** @class */ (function (_super) {
             }
             error.stopPropagation();
         };
-        _this.getTime = function () {
-            var date = new Date();
-            var month = date.getMonth() + 1;
-            var strDate = date.getDate();
-            if (month >= 1 && month <= 9) {
-                month = "0" + month;
-            }
-            if (strDate >= 0 && strDate <= 9) {
-                strDate = "0" + strDate;
-            }
-            return (date.getFullYear() + "-" + month + "-" + strDate + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
+        _this._getTime = function (localtime) {
+            var date = new Date(localtime);
+            var month = _this._zero(1 + date.getMonth());
+            return (date.getFullYear() + "-" + month + "-" + _this._zero(date.getDate()) + " " + _this._zero(date.getHours()) + ":" + _this._zero(date.getMinutes()) + ":" + _this._zero(date.getSeconds()));
         };
         _this.state = {
             hasError: false,
@@ -186,7 +180,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
             var obj = {
                 caught_event: 'componentDidCatch',
                 msg: error.message,
-                localtime: this.getTime(),
+                localtime: Date.now(),
                 stack: info.componentStack,
                 event_type: error.name,
                 is_trusted: 1,
@@ -207,6 +201,9 @@ var ErrorBoundary = /** @class */ (function (_super) {
     ErrorBoundary.prototype.componentWillUnmount = function () {
         window.removeEventListener('error', this.catchError, true);
         window.removeEventListener('unhandledrejection', this.catchRejectEvent, true);
+    };
+    ErrorBoundary.prototype._zero = function (s) {
+        return s < 10 ? '0' + s : s;
     };
     ErrorBoundary.prototype.render = function () {
         var errorRender = this.props.errorRender;

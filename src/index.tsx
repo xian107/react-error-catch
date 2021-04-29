@@ -27,7 +27,7 @@ class ErrorBoundary extends React.Component<
       const obj = {
         caught_event: 'componentDidCatch',
         msg: error.message,
-        localtime: this.getTime(),
+        localtime: Date.now(),
         stack: info.componentStack,
         event_type: error.name,
         is_trusted: 1,
@@ -72,6 +72,7 @@ class ErrorBoundary extends React.Component<
     // filter the mutiple items
     const { localtime, caught_event } = error
     const label = `${localtime}-${caught_event}`
+    error.localtime = this._getTime(localtime);
     this.state.maps.set(label, error)
     // post by max
     // 1 means post immediately
@@ -130,7 +131,7 @@ class ErrorBoundary extends React.Component<
       const obj = {
         caught_event: 'onerror',
         msg: message,
-        localtime: this.getTime(),
+        localtime: Date.now(),
         stack: `Error: at ${filename} ${lineno}:${colno}`,
         event_type: type,
         is_trusted: isTrusted ? 1: 0,
@@ -156,7 +157,7 @@ class ErrorBoundary extends React.Component<
       const obj = {
         caught_event: 'onunhandledrejection',
         msg,
-        localtime: this.getTime(),
+        localtime:Date.now(),
         stack: stack,
         event_type: type,
         is_trusted: isTrusted ? 1: 0,
@@ -169,17 +170,13 @@ class ErrorBoundary extends React.Component<
     error.stopPropagation()
   }
 
-  getTime=()=>{
-    let date = new Date();
-    let month:string | number = date.getMonth() + 1;
-    let strDate:string | number = date.getDate();
-    if (month >= 1 && month <= 9) {
-      month = "0" + month;
-    }
-    if (strDate >= 0 && strDate <= 9) {
-      strDate = "0" + strDate;
-    }
-    return (date.getFullYear() + "-" + month + "-" + strDate + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds())
+  _zero(s:string | number) {
+    return s < 10 ? '0' + s: s;
+  }
+  _getTime=(localtime:number | string)=>{
+    let date = new Date(localtime);
+    let month:string | number = this._zero(1+date.getMonth());
+    return (date.getFullYear() + "-" + month + "-" + this._zero(date.getDate()) + " " + this._zero(date.getHours()) + ":" + this._zero(date.getMinutes()) + ":" + this._zero(date.getSeconds()))
   }
 
   render() {

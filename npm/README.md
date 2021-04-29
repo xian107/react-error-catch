@@ -1,4 +1,5 @@
 ### 捕获 React 异常
+
 |异常类型|同步方法|异步方法|资源加载|Promise|async/await|
 |:---|:---|:---|:---|:---|:---|
 |try/catch|√||||√|
@@ -12,6 +13,7 @@
 - 引用错误，即引入某个资源文件时发生错误，这个往往在编译过程中能够捕获到。在这里我们讨论异步引入的情况
 - 事件处理，即渲染没问题，但是在在调用其触发事件时发生错误，比如 JSON.parse(JSON.parse("error"))，这类错误可以细分为用户手动触发和脚本触发，可以参考 Error.isTrusted 属性进行理解
 - 异步代码，比如 promise.reject("error")
+
 
 ### 使用
 
@@ -31,7 +33,9 @@ const App = () => {
       max={1}
       filters={[]}
       onCatch={(errors) => {
-        console.log('报错咯')
+        console.log('报错咯');
+        // 上报异常信息到后端，动态创建标签方式
+        new Image().src = `http://localhost:3000/log/report?info=${JSON.stringify(errors)}`
       }}
     >
       <Main />

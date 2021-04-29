@@ -1,6 +1,6 @@
 import React from 'react'
 export interface ErrorInfo {
-  localtime?: number | string // window.performance.timeOrigin 时间戳
+  localtime: number | string // window.performance.timeOrigin 时间戳
   msg?: string // 错误信息localtime
   stack?: string  // 文件路径
   caught_event?: string // 捕获事件 "onerror" | "onunhandledrejection" | "componentDidCatch"

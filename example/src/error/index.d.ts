@@ -1,8 +1,6 @@
 import React from 'react'
-
-
 export interface ErrorInfo {
-  localtime?: number | string // 错误时间
+  localtime: number | string // window.performance.timeOrigin 时间戳
   msg?: string // 错误信息localtime
   stack?: string  // 文件路径
   caught_event?: string // 捕获事件 "onerror" | "onunhandledrejection" | "componentDidCatch"
@@ -38,12 +36,12 @@ export interface ErrorCatcherState {
   maps: Map<string,any>
 }
 export interface ErrorCatcherProps extends React.Props<ErrorCatcher> {
-  errorRender?: React.ReactNode //当捕获到组件渲染错误时，降级渲染样式
+  errorRender?: React.ReactNode //当 捕获到组件渲染错误时，降级渲染样式
   user?: string // 谁触发了错误。默认：cxyuns_user
   token?: string // 用户token
   language ?: string // 访问网站语言
   app?: string // 触发错误的应用，默认：cxyuns_app
-  onCatch?: (error: ReportError) => any  // 当满足设置条件时的错误捕获回调
+  onCatch?: (error: ReportError) => void  // 当满足设置条件时的错误捕获回调
   max?: number // 当捕获到的错误超过设置max值时，触发onCatch事件。默认：1
   filters?: string[] // 定义需要过滤的错误
 }

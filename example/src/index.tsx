@@ -4,14 +4,14 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import ErrorCatch from "./error/index";
-
+import {  ReportError } from './error/index.d';
 ReactDOM.render(
   <React.StrictMode>
     <ErrorCatch
       app="react-catch"
       user="cxyuns"
       max={1}
-      onCatch={(errors) => {
+      onCatch={(errors:ReportError) => {
         console.log('报错咯！',errors);
         // 上报异常信息到后端，动态创建标签方式
         new Image().src = `http://localhost:3000/log/report?info=${JSON.stringify(errors)}`
