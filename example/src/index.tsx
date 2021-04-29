@@ -10,10 +10,11 @@ ReactDOM.render(
     <ErrorCatch
       app="react-catch"
       user="cxyuns"
-      delay={5000}
       max={1}
       onCatch={(errors) => {
-        console.log('catched')
+        console.log('报错咯！',errors);
+        // 上报异常信息到后端，动态创建标签方式
+        new Image().src = `http://localhost:3000/log/report?info=${JSON.stringify(errors)}`
       }}
     >
       <App />

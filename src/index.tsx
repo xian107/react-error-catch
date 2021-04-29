@@ -1,19 +1,19 @@
 import React from 'react';
-import { ErrorCatcherProps, ErrorCatcherState, ErrorInfo } from '../index.d';
+import { ErrorCatcherProps, ErrorCatcherState, ErrorInfo,ReportError } from '../index.d';
 class ErrorBoundary extends React.Component<
   ErrorCatcherProps,
   ErrorCatcherState
 > {
+  selfError="自身边界错误"
+  stableMessage = [this.selfError]
   constructor(props: ErrorCatcherProps) {
     super(props)
     this.state = {
       hasError: false,
       maps: new Map(),
-      timer: null,
     }
   }
-  selfError="自身边界错误";
-  stableMessage = [this.selfError]
+ 
 
   static getDerivedStateFromError() {
     // react错误边界静态方法，返回值相当于调用setState()
@@ -25,18 +25,13 @@ class ErrorBoundary extends React.Component<
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     try {
       const obj = {
-        caughtEvent: 'componentDidCatch',
-        message: error.message,
-        timeOrigin: window.performance.timeOrigin,
+        caught_event: 'componentDidCatch',
+        msg: error.message,
+        localtime: this.getTime(),
         stack: info.componentStack,
-        type: error.name,
-        isTrusted: true,
-        cookieEnabled: window.navigator.cookieEnabled,
-        cookie: document.cookie || '',
-        userAgent: window.navigator.userAgent,
-        href: window.location.href,
-        screenHeight: window.screen.availHeight,
-        screenWidth: window.screen.availWidth,
+        event_type: error.name,
+        is_trusted: 1,
+        err_href: window.location.href,
       }
       this.postError(obj);
     } catch (error) {
@@ -49,8 +44,6 @@ class ErrorBoundary extends React.Component<
     window.addEventListener('error', this.catchError, true)
     // async code
     window.addEventListener('unhandledrejection', this.catchRejectEvent, true)
-    // set time watcher
-    this.setTimer(true)
   }
 
   componentWillUnmount() {
@@ -60,13 +53,12 @@ class ErrorBoundary extends React.Component<
       this.catchRejectEvent,
       true
     )
-    this.setTimer(false)
   }
 
   beforeFilter = (error: ErrorInfo): boolean => {
     const judge = this.stableMessage.concat(this.props.filters ? this.props.filters : [])
-    if (error.message) {
-      return judge.includes(error.message)
+    if (error.msg) {
+      return judge.includes(error.msg)
     }
     return true
   }
@@ -78,8 +70,8 @@ class ErrorBoundary extends React.Component<
       return
     }
     // filter the mutiple items
-    const { user, app, timeOrigin, caughtEvent } = error
-    const label = `${app}-${user}-${timeOrigin}-${caughtEvent}`
+    const { localtime, caught_event } = error
+    const label = `${localtime}-${caught_event}`
     this.state.maps.set(label, error)
     // post by max
     // 1 means post immediately
@@ -89,28 +81,26 @@ class ErrorBoundary extends React.Component<
     }
   }
 
-  setTimer = (label: boolean) => {
-    if (label) {
-      const delay = this.props.delay || 1000 * 60
-      setTimeout(() => {
-        if (this.state.timer) {
-          clearTimeout(this.state.timer)
-          this.setState({ timer: null })
-        }
-        if (this.state.maps && this.state.maps.size > 0) {
-          this.catchBack()
-        }
-        this.setTimer(true)
-      }, delay)
-    } else {
-      clearTimeout(this.state.timer)
-      this.setState({ timer: null })
-    }
-  }
-
   catchBack = () => {
     try {
-      this.props.onCatch && this.props.onCatch(Array.from(this.state.maps.values()))
+      const report:ReportError = {
+        level: "error",
+        app: this.props.app || 'cxyuns_app',
+        errors: Array.from(this.state.maps.values()),
+        localinfo:{
+          user:this.props.user || 'cxyuns_user',
+          ...(this.props.token ? {token: this.props.token} : {}),
+          ...(this.props.language ? {user_language: this.props.language} : {}),
+          ua: window.navigator.userAgent,
+          is_cookie: window.navigator.cookieEnabled ? 1 : 0,
+          cookie: document.cookie || '',
+          screenHeight: window.screen.availHeight,
+          screenWidth: window.screen.availWidth,
+        }
+      }
+      if(this.props.onCatch){
+        this.props.onCatch(report)
+      }
       // after callback the maps, then clear
       this.state.maps.clear()
     } catch (error) {
@@ -119,16 +109,11 @@ class ErrorBoundary extends React.Component<
   }
 
   postError = (error: ErrorInfo) => {
-    const obj = Object.assign({}, error, {
-      app: this.props.app || 'cxyuns_app',
-      user: this.props.user || 'cxyuns_user',
-      token: this.props.token,
-    })
     if (process.env.NODE_ENV === 'development') {
-      console.table(obj)
+      console.table(error)
     }
     // filter same errors, it will remian the last one
-    this.filter(obj)
+    this.filter(error)
   }
 
   catchError = (error: ErrorEvent) => {
@@ -143,18 +128,13 @@ class ErrorBoundary extends React.Component<
         message,
       } = error
       const obj = {
-        caughtEvent: 'onerror',
-        message: message,
-        timeOrigin: window.performance.timeOrigin,
+        caught_event: 'onerror',
+        msg: message,
+        localtime: this.getTime(),
         stack: `Error: at ${filename} ${lineno}:${colno}`,
-        type: type,
-        isTrusted: isTrusted,
-        cookieEnabled: window.navigator.cookieEnabled,
-        cookie: document.cookie || '',
-        userAgent: window.navigator.userAgent,
-        href: window.location.href,
-        screenHeight: window.screen.availHeight,
-        screenWidth: window.screen.availWidth,
+        event_type: type,
+        is_trusted: isTrusted ? 1: 0,
+        err_href: window.location.href,
       }
       this.postError(obj)
     } catch (error) {
@@ -165,33 +145,41 @@ class ErrorBoundary extends React.Component<
   catchRejectEvent = (error: PromiseRejectionEvent) => {
     try {
       const { type, reason, isTrusted } = error;
-      let message,stack;
+      let msg,stack;
       if(typeof reason === "string"){
-        message = reason;
+        msg = reason;
       }
       if(Object.prototype.toString.call(reason) === '[object Error]'){
-        message = reason.message;
+        msg = reason.message;
         stack = reason.stack;
       }
       const obj = {
-        caughtEvent: 'onunhandledrejection',
-        message: message,
-        timeOrigin: window.performance.timeOrigin,
+        caught_event: 'onunhandledrejection',
+        msg,
+        localtime: this.getTime(),
         stack: stack,
-        type: type,
-        isTrusted: isTrusted,
-        cookieEnabled: window.navigator.cookieEnabled,
-        cookie: document.cookie || '',
-        userAgent: window.navigator.userAgent,
-        href: window.location.href,
-        screenHeight: window.screen.availHeight,
-        screenWidth: window.screen.availWidth,
+        event_type: type,
+        is_trusted: isTrusted ? 1: 0,
+        err_href: window.location.href,
       }
       this.postError(obj)
     } catch (error) {
       console.log(this.selfError,error)
     }
     error.stopPropagation()
+  }
+
+  getTime=()=>{
+    let date = new Date();
+    let month:string | number = date.getMonth() + 1;
+    let strDate:string | number = date.getDate();
+    if (month >= 1 && month <= 9) {
+      month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+      strDate = "0" + strDate;
+    }
+    return (date.getFullYear() + "-" + month + "-" + strDate + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds())
   }
 
   render() {

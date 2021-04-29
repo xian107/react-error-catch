@@ -42,6 +42,19 @@ function __extends(d, b) {
 
   d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
+var __assign = function () {
+  __assign = Object.assign || function __assign(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+
+      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+    }
+
+    return t;
+  };
+
+  return __assign.apply(this, arguments);
+};
 
 var ErrorBoundary = /** @class */ (function (_super) {
     __extends(ErrorBoundary, _super);
@@ -51,8 +64,8 @@ var ErrorBoundary = /** @class */ (function (_super) {
         _this.stableMessage = [_this.selfError];
         _this.beforeFilter = function (error) {
             var judge = _this.stableMessage.concat(_this.props.filters ? _this.props.filters : []);
-            if (error.message) {
-                return judge.includes(error.message);
+            if (error.msg) {
+                return judge.includes(error.msg);
             }
             return true;
         };
@@ -63,8 +76,8 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 return;
             }
             // filter the mutiple items
-            var user = error.user, app = error.app, timeOrigin = error.timeOrigin, caughtEvent = error.caughtEvent;
-            var label = app + "-" + user + "-" + timeOrigin + "-" + caughtEvent;
+            var localtime = error.localtime, caught_event = error.caught_event;
+            var label = localtime + "-" + caught_event;
             _this.state.maps.set(label, error);
             // post by max
             // 1 means post immediately
@@ -73,28 +86,17 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 _this.catchBack();
             }
         };
-        _this.setTimer = function (label) {
-            if (label) {
-                var delay = _this.props.delay || 1000 * 60;
-                setTimeout(function () {
-                    if (_this.state.timer) {
-                        clearTimeout(_this.state.timer);
-                        _this.setState({ timer: null });
-                    }
-                    if (_this.state.maps && _this.state.maps.size > 0) {
-                        _this.catchBack();
-                    }
-                    _this.setTimer(true);
-                }, delay);
-            }
-            else {
-                clearTimeout(_this.state.timer);
-                _this.setState({ timer: null });
-            }
-        };
         _this.catchBack = function () {
             try {
-                _this.props.onCatch && _this.props.onCatch(Array.from(_this.state.maps.values()));
+                var report = {
+                    level: "error",
+                    app: _this.props.app || 'cxyuns_app',
+                    errors: Array.from(_this.state.maps.values()),
+                    localinfo: __assign(__assign(__assign({ user: _this.props.user || 'cxyuns_user' }, (_this.props.token ? { token: _this.props.token } : {})), (_this.props.language ? { user_language: _this.props.language } : {})), { ua: window.navigator.userAgent, is_cookie: window.navigator.cookieEnabled ? 1 : 0, cookie: document.cookie || '', screenHeight: window.screen.availHeight, screenWidth: window.screen.availWidth })
+                };
+                if (_this.props.onCatch) {
+                    _this.props.onCatch(report);
+                }
                 // after callback the maps, then clear
                 _this.state.maps.clear();
             }
@@ -103,34 +105,24 @@ var ErrorBoundary = /** @class */ (function (_super) {
             }
         };
         _this.postError = function (error) {
-            var obj = Object.assign({}, error, {
-                app: _this.props.app || 'cxyuns_app',
-                user: _this.props.user || 'cxyuns_user',
-                token: _this.props.token,
-            });
             if (process.env.NODE_ENV === 'development') {
-                console.table(obj);
+                console.table(error);
             }
             // filter same errors, it will remian the last one
-            _this.filter(obj);
+            _this.filter(error);
         };
         _this.catchError = function (error) {
             error.stopPropagation();
             try {
                 var colno = error.colno, lineno = error.lineno, filename = error.filename, type = error.type, isTrusted = error.isTrusted, message = error.message;
                 var obj = {
-                    caughtEvent: 'onerror',
-                    message: message,
-                    timeOrigin: window.performance.timeOrigin,
+                    caught_event: 'onerror',
+                    msg: message,
+                    localtime: _this.getTime(),
                     stack: "Error: at " + filename + " " + lineno + ":" + colno,
-                    type: type,
-                    isTrusted: isTrusted,
-                    cookieEnabled: window.navigator.cookieEnabled,
-                    cookie: document.cookie || '',
-                    userAgent: window.navigator.userAgent,
-                    href: window.location.href,
-                    screenHeight: window.screen.availHeight,
-                    screenWidth: window.screen.availWidth,
+                    event_type: type,
+                    is_trusted: isTrusted ? 1 : 0,
+                    err_href: window.location.href,
                 };
                 _this.postError(obj);
             }
@@ -141,27 +133,22 @@ var ErrorBoundary = /** @class */ (function (_super) {
         _this.catchRejectEvent = function (error) {
             try {
                 var type = error.type, reason = error.reason, isTrusted = error.isTrusted;
-                var message = void 0, stack = void 0;
+                var msg = void 0, stack = void 0;
                 if (typeof reason === "string") {
-                    message = reason;
+                    msg = reason;
                 }
                 if (Object.prototype.toString.call(reason) === '[object Error]') {
-                    message = reason.message;
+                    msg = reason.message;
                     stack = reason.stack;
                 }
                 var obj = {
-                    caughtEvent: 'onunhandledrejection',
-                    message: message,
-                    timeOrigin: window.performance.timeOrigin,
+                    caught_event: 'onunhandledrejection',
+                    msg: msg,
+                    localtime: _this.getTime(),
                     stack: stack,
-                    type: type,
-                    isTrusted: isTrusted,
-                    cookieEnabled: window.navigator.cookieEnabled,
-                    cookie: document.cookie || '',
-                    userAgent: window.navigator.userAgent,
-                    href: window.location.href,
-                    screenHeight: window.screen.availHeight,
-                    screenWidth: window.screen.availWidth,
+                    event_type: type,
+                    is_trusted: isTrusted ? 1 : 0,
+                    err_href: window.location.href,
                 };
                 _this.postError(obj);
             }
@@ -170,10 +157,21 @@ var ErrorBoundary = /** @class */ (function (_super) {
             }
             error.stopPropagation();
         };
+        _this.getTime = function () {
+            var date = new Date();
+            var month = date.getMonth() + 1;
+            var strDate = date.getDate();
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+            return (date.getFullYear() + "-" + month + "-" + strDate + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
+        };
         _this.state = {
             hasError: false,
             maps: new Map(),
-            timer: null,
         };
         return _this;
     }
@@ -186,18 +184,13 @@ var ErrorBoundary = /** @class */ (function (_super) {
     ErrorBoundary.prototype.componentDidCatch = function (error, info) {
         try {
             var obj = {
-                caughtEvent: 'componentDidCatch',
-                message: error.message,
-                timeOrigin: window.performance.timeOrigin,
+                caught_event: 'componentDidCatch',
+                msg: error.message,
+                localtime: this.getTime(),
                 stack: info.componentStack,
-                type: error.name,
-                isTrusted: true,
-                cookieEnabled: window.navigator.cookieEnabled,
-                cookie: document.cookie || '',
-                userAgent: window.navigator.userAgent,
-                href: window.location.href,
-                screenHeight: window.screen.availHeight,
-                screenWidth: window.screen.availWidth,
+                event_type: error.name,
+                is_trusted: 1,
+                err_href: window.location.href,
             };
             this.postError(obj);
         }
@@ -210,13 +203,10 @@ var ErrorBoundary = /** @class */ (function (_super) {
         window.addEventListener('error', this.catchError, true);
         // async code
         window.addEventListener('unhandledrejection', this.catchRejectEvent, true);
-        // set time watcher
-        this.setTimer(true);
     };
     ErrorBoundary.prototype.componentWillUnmount = function () {
         window.removeEventListener('error', this.catchError, true);
         window.removeEventListener('unhandledrejection', this.catchRejectEvent, true);
-        this.setTimer(false);
     };
     ErrorBoundary.prototype.render = function () {
         var errorRender = this.props.errorRender;

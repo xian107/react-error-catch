@@ -4,7 +4,7 @@
 version="0.0.1"
 app="react-error-catch"
 
-echo "hello"
+echo "Hi"
 
 function build() {
   echo ">> The current version of $app is $version"
