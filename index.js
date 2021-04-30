@@ -60,6 +60,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
     __extends(ErrorBoundary, _super);
     function ErrorBoundary(props) {
         var _this = _super.call(this, props) || this;
+        _this.timeout = null;
         _this.selfError = "自身边界错误";
         _this.stableMessage = [_this.selfError];
         _this.beforeFilter = function (error) {
@@ -77,14 +78,26 @@ var ErrorBoundary = /** @class */ (function (_super) {
             }
             // filter the mutiple items
             var localtime = error.localtime, caught_event = error.caught_event;
-            var label = localtime + "-" + caught_event;
+            var label = Math.floor(localtime / 1000) + "-" + caught_event;
             error.localtime = _this._getTime(localtime);
             _this.state.maps.set(label, error);
-            // post by max
-            // 1 means post immediately
-            var max = _this.props.max || 1;
-            if (_this.state.maps && _this.state.maps.size >= max) {
-                _this.catchBack();
+            _this.debounce();
+        };
+        // 过滤1秒内连续抛出同一错误
+        _this.debounce = function () {
+            try {
+                if (_this.timeout !== null) {
+                    clearTimeout(_this.timeout);
+                }
+                _this.timeout = setTimeout(function () {
+                    var max = _this.props.max || 1;
+                    if (_this.state.maps && _this.state.maps.size >= max) {
+                        _this.catchBack();
+                    }
+                }, 1000);
+            }
+            catch (error) {
+                console.log(_this.selfError + "debounce", error);
             }
         };
         _this.catchBack = function () {
@@ -102,7 +115,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 _this.state.maps.clear();
             }
             catch (error) {
-                console.log(_this.selfError, error);
+                console.log(_this.selfError + "catchBack", error);
             }
         };
         _this.postError = function (error) {
@@ -128,7 +141,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 _this.postError(obj);
             }
             catch (error) {
-                console.log(_this.selfError, error);
+                console.log(_this.selfError + "catchError", error);
             }
         };
         _this.catchRejectEvent = function (error) {
@@ -154,7 +167,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 _this.postError(obj);
             }
             catch (error) {
-                console.log(_this.selfError, error);
+                console.log(_this.selfError + "catchRejectEvent", error);
             }
             error.stopPropagation();
         };
@@ -189,7 +202,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
             this.postError(obj);
         }
         catch (error) {
-            console.log(this.selfError, error);
+            console.log(this.selfError + "componentDidCatch", error);
         }
     };
     ErrorBoundary.prototype.componentDidMount = function () {

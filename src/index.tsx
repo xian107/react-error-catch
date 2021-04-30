@@ -4,6 +4,7 @@ class ErrorBoundary extends React.Component<
   ErrorCatcherProps,
   ErrorCatcherState
 > {
+  timeout:any=null
   selfError="自身边界错误"
   stableMessage = [this.selfError]
   constructor(props: ErrorCatcherProps) {
@@ -35,7 +36,7 @@ class ErrorBoundary extends React.Component<
       }
       this.postError(obj);
     } catch (error) {
-      console.log(this.selfError,error)
+      console.log(this.selfError + "componentDidCatch",error)
     }
   }
 
@@ -71,14 +72,25 @@ class ErrorBoundary extends React.Component<
     }
     // filter the mutiple items
     const { localtime, caught_event } = error
-    const label = `${localtime}-${caught_event}`
+    const label = `${Math.floor((localtime as number)/1000)}-${caught_event}`
     error.localtime = this._getTime(localtime);
     this.state.maps.set(label, error)
-    // post by max
-    // 1 means post immediately
-    const max = this.props.max || 1
-    if (this.state.maps && this.state.maps.size >= max) {
-      this.catchBack()
+    this.debounce();
+  }
+  // 过滤1秒内连续抛出同一错误
+  debounce = ()=>{  
+    try {
+      if(this.timeout !== null){
+        clearTimeout(this.timeout);
+      }      
+      this.timeout = setTimeout(()=>{
+        const max = this.props.max || 1;
+        if (this.state.maps && this.state.maps.size >= max) {
+          this.catchBack()
+        }
+      }, 1000);    
+    } catch (error) {
+      console.log(this.selfError + "debounce",error)
     }
   }
 
@@ -105,7 +117,7 @@ class ErrorBoundary extends React.Component<
       // after callback the maps, then clear
       this.state.maps.clear()
     } catch (error) {
-      console.log(this.selfError,error)
+      console.log(this.selfError + "catchBack",error)
     }
   }
 
@@ -139,7 +151,7 @@ class ErrorBoundary extends React.Component<
       }
       this.postError(obj)
     } catch (error) {
-      console.log(this.selfError,error)
+      console.log(this.selfError + "catchError",error)
     }
   }
 
@@ -165,7 +177,7 @@ class ErrorBoundary extends React.Component<
       }
       this.postError(obj)
     } catch (error) {
-      console.log(this.selfError,error)
+      console.log(this.selfError + "catchRejectEvent",error)
     }
     error.stopPropagation()
   }
