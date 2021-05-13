@@ -62,7 +62,8 @@ var ErrorBoundary = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.timeout = null;
         _this.selfError = "自身边界错误";
-        _this.stableMessage = [_this.selfError];
+        // 过滤日志
+        _this.stableMessage = [_this.selfError, "ResizeObserver loop limit exceeded"];
         _this.beforeFilter = function (error) {
             var judge = _this.stableMessage.concat(_this.props.filters ? _this.props.filters : []);
             if (error.msg) {
@@ -106,7 +107,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                     level: "error",
                     app: _this.props.app || 'cxyuns_app',
                     errors: Array.from(_this.state.maps.values()),
-                    localinfo: __assign(__assign(__assign({ user: _this.props.user || 'cxyuns_user' }, (_this.props.token ? { token: _this.props.token } : {})), (_this.props.language ? { user_language: _this.props.language } : {})), { ua: window.navigator.userAgent, is_cookie: window.navigator.cookieEnabled ? 1 : 0, cookie: document.cookie || '', screenHeight: window.screen.availHeight, screenWidth: window.screen.availWidth })
+                    localinfo: __assign(__assign(__assign({ user: _this.props.user || 'cxyuns_user' }, (_this.props.token ? { token: _this.props.token } : {})), (_this.props.language ? { user_language: _this.props.language } : {})), { ua: window.navigator.userAgent, is_cookie: window.navigator.cookieEnabled ? 1 : 0, cookie: document.cookie || '', screen_height: window.screen.availHeight, screen_width: window.screen.availWidth })
                 };
                 if (_this.props.onCatch) {
                     _this.props.onCatch(report);
@@ -154,12 +155,17 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 if (Object.prototype.toString.call(reason) === '[object Error]') {
                     msg = reason.message;
                     stack = reason.stack;
+                    // 防止上报日志时接口出错，造成死循环
+                    if (reason.config && reason.config.url && reason.config.url.includes("/log/web/report")) {
+                        return;
+                    }
                 }
                 var obj = {
                     caught_event: 'onunhandledrejection',
                     msg: msg,
                     localtime: Date.now(),
                     stack: stack,
+                    reason: reason,
                     event_type: type,
                     is_trusted: isTrusted ? 1 : 0,
                     err_href: window.location.href,

@@ -7,6 +7,7 @@ export interface ErrorInfo {
   event_type?: string // event.type 事件类型
   is_trusted?: number // event.isTrusted 事件触发来源
   err_href?: string // 出错地址
+  reason?:any // http info
 }
 
 export interface Localinfo {
@@ -16,8 +17,8 @@ export interface Localinfo {
   ua?: string 
   is_cookie?: number // 错误信息
   cookie?: string
-  screenHeight?: number | string
-  screenWidth?: number | string
+  screen_height?: number | string
+  screen_width?: number | string
 }
 export interface ReportError{
   level: string // 错误级别，可取值：warning / notice / error / info

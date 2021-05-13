@@ -6,7 +6,8 @@ class ErrorBoundary extends React.Component<
 > {
   timeout:any=null
   selfError="自身边界错误"
-  stableMessage = [this.selfError]
+  // 过滤日志
+  stableMessage = [this.selfError,"ResizeObserver loop limit exceeded"]
   constructor(props: ErrorCatcherProps) {
     super(props)
     this.state = {
@@ -67,7 +68,6 @@ class ErrorBoundary extends React.Component<
   filter = (error: ErrorInfo) => {
     // filter by user define
     if (this.beforeFilter(error)) {
-      console.log("filterError：",error);
       return
     }
     // filter the mutiple items
@@ -107,8 +107,8 @@ class ErrorBoundary extends React.Component<
           ua: window.navigator.userAgent,
           is_cookie: window.navigator.cookieEnabled ? 1 : 0,
           cookie: document.cookie || '',
-          screenHeight: window.screen.availHeight,
-          screenWidth: window.screen.availWidth,
+          screen_height: window.screen.availHeight,
+          screen_width: window.screen.availWidth,
         }
       }
       if(this.props.onCatch){
@@ -165,12 +165,17 @@ class ErrorBoundary extends React.Component<
       if(Object.prototype.toString.call(reason) === '[object Error]'){
         msg = reason.message;
         stack = reason.stack;
+        // 防止上报日志时接口出错，造成死循环
+        if(reason.config && reason.config.url && reason.config.url.includes("/log/web/report")){
+          return
+        }
       }
       const obj = {
         caught_event: 'onunhandledrejection',
         msg,
         localtime:Date.now(),
-        stack: stack,
+        stack,
+        reason,
         event_type: type,
         is_trusted: isTrusted ? 1: 0,
         err_href: window.location.href,
