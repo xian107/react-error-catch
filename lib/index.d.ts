@@ -7,7 +7,6 @@ export interface ErrorInfo {
   event_type?: string // event.type 事件类型
   is_trusted?: number // event.isTrusted 事件触发来源
   err_href?: string // 出错地址
-  reason?:any // http info
 }
 
 export interface Localinfo {

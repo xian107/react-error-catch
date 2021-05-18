@@ -164,7 +164,8 @@ class ErrorBoundary extends React.Component<
       }
       if(Object.prototype.toString.call(reason) === '[object Error]'){
         msg = reason.message;
-        stack = reason.stack;
+        stack = JSON.stringify(reason);
+        if(stack === "{}"){ stack = reason.stack }
         // 防止上报日志时接口出错，造成死循环
         if(reason.config && reason.config.url && reason.config.url.includes("/log/web/report")){
           return
@@ -175,7 +176,6 @@ class ErrorBoundary extends React.Component<
         msg,
         localtime:Date.now(),
         stack,
-        reason,
         event_type: type,
         is_trusted: isTrusted ? 1: 0,
         err_href: window.location.href,

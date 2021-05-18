@@ -74,7 +74,6 @@ var ErrorBoundary = /** @class */ (function (_super) {
         _this.filter = function (error) {
             // filter by user define
             if (_this.beforeFilter(error)) {
-                console.log("filterError：", error);
                 return;
             }
             // filter the mutiple items
@@ -154,7 +153,10 @@ var ErrorBoundary = /** @class */ (function (_super) {
                 }
                 if (Object.prototype.toString.call(reason) === '[object Error]') {
                     msg = reason.message;
-                    stack = reason.stack;
+                    stack = JSON.stringify(reason);
+                    if (stack === "{}") {
+                        stack = reason.stack;
+                    }
                     // 防止上报日志时接口出错，造成死循环
                     if (reason.config && reason.config.url && reason.config.url.includes("/log/web/report")) {
                         return;
@@ -165,7 +167,6 @@ var ErrorBoundary = /** @class */ (function (_super) {
                     msg: msg,
                     localtime: Date.now(),
                     stack: stack,
-                    reason: reason,
                     event_type: type,
                     is_trusted: isTrusted ? 1 : 0,
                     err_href: window.location.href,

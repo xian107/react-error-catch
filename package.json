@@ -1,11 +1,11 @@
 {
   "name": "react-error-catch",
-  "version": "1.0.6",
+  "version": "1.0.12",
   "description": "react error catch!",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "files": [
-    "index.js"
+    "lib/*"
   ],
   "keywords": [
     "[\"react\"",
@@ -28,7 +28,7 @@
   "dependencies": {},
   "scripts": {
     "build": "rollup -c && bash control.sh build",
-    "example": "cd example/ && yarn install && yarn start"
+    "example": "cd example/ && yarn && yarn start"
   },
   "eslintConfig": {
     "extends": "react-app"
