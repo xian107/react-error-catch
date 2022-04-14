@@ -44,6 +44,7 @@ export interface ErrorCatcherProps extends React.Props<ErrorCatcher> {
   onCatch?: (error: ReportError) => any  // 当满足设置条件时的错误捕获回调
   max?: number // 当捕获到的错误超过设置max值时，触发onCatch事件。默认：1
   filters?: string[] // 定义需要过滤的错误
+  children?: React.ReactNode;
 }
 
 declare class ErrorCatcher extends React.Component<ErrorCatcherProps, ErrorCatcherState> {}

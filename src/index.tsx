@@ -7,7 +7,7 @@ class ErrorBoundary extends React.Component<
   timeout:any=null
   selfError="自身边界错误"
   // 过滤日志
-  stableMessage = [this.selfError,"ResizeObserver loop limit exceeded"]
+  stableMessage = [this.selfError,"ResizeObserver loop limit exceeded","Uncaught ReferenceError: viewWillAppear is not defined","Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."]
   constructor(props: ErrorCatcherProps) {
     super(props)
     this.state = {
