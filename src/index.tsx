@@ -85,6 +85,10 @@ class ErrorBoundary extends React.Component<
     if (this.beforeFilter(error)) {
       return;
     }
+    if (process.env.NODE_ENV === "development") {
+      console.table(error);
+    }
+
     // filter the mutiple items
     const { localtime, caught_event } = error;
     const label = `${Math.floor((localtime as number) / 1000)}-${caught_event}`;
@@ -139,9 +143,6 @@ class ErrorBoundary extends React.Component<
   };
 
   postError = (error: ErrorInfo) => {
-    if (process.env.NODE_ENV === "development") {
-      console.table(error);
-    }
     // filter same errors, it will remian the last one
     this.filter(error);
   };

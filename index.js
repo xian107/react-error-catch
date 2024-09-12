@@ -85,6 +85,9 @@ var ErrorBoundary = /** @class */ (function (_super) {
             if (_this.beforeFilter(error)) {
                 return;
             }
+            if (process.env.NODE_ENV === "development") {
+                console.table(error);
+            }
             // filter the mutiple items
             var localtime = error.localtime, caught_event = error.caught_event;
             var label = Math.floor(localtime / 1000) + "-" + caught_event;
@@ -130,9 +133,6 @@ var ErrorBoundary = /** @class */ (function (_super) {
             }
         };
         _this.postError = function (error) {
-            if (process.env.NODE_ENV === "development") {
-                console.table(error);
-            }
             // filter same errors, it will remian the last one
             _this.filter(error);
         };
