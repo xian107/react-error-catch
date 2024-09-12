@@ -12,14 +12,14 @@ export interface ErrorInfo {
 export interface Localinfo {
   user?: string // 触发错误的用户
   user_language?: string // 访问网站语言
-  token?:string // 用户token
-  ua?: string 
+  token?: string // 用户token
+  ua?: string
   is_cookie?: number // 错误信息
   cookie?: string
   screenHeight?: number | string
   screenWidth?: number | string
 }
-export interface ReportError{
+export interface ReportError {
   level: string // 错误级别，可取值：warning / notice / error / info
   app: string // 应用名称
   errors?: ErrorInfo[] // 错误信息，至少传一个
@@ -33,19 +33,19 @@ export interface Error {
 
 export interface ErrorCatcherState {
   hasError: boolean
-  maps: Map<string,any>
+  maps: Map<string, any>
 }
 export interface ErrorCatcherProps extends React.Props<ErrorCatcher> {
   errorRender?: React.ReactNode //当 捕获到组件渲染错误时，降级渲染样式
-  user?: string // 谁触发了错误。默认：cxyuns_user
+  user?: string // 谁触发了错误。默认：bcyg_user
   token?: string // 用户token
-  language ?: string // 访问网站语言
-  app?: string // 触发错误的应用，默认：cxyuns_app
+  language?: string // 访问网站语言
+  app?: string // 触发错误的应用，默认：bcyg_app
   onCatch?: (error: ReportError) => void  // 当满足设置条件时的错误捕获回调
   max?: number // 当捕获到的错误超过设置max值时，触发onCatch事件。默认：1
   filters?: string[] // 定义需要过滤的错误
 }
 
-declare class ErrorCatcher extends React.Component<ErrorCatcherProps, ErrorCatcherState> {}
+declare class ErrorCatcher extends React.Component<ErrorCatcherProps, ErrorCatcherState> { }
 
 export default ErrorCatcher
