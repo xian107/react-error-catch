@@ -2,7 +2,8 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var React = _interopDefault(require('react'));
+var React = require('react');
+var React__default = _interopDefault(React);
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -118,9 +119,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                     level: "error",
                     app: _this.props.app || "bcyg_app",
                     errors: Array.from(_this.state.maps.values()),
-                    localinfo: __assign(__assign(__assign({ user: _this.props.user || "bcyg_user" }, (_this.props.token ? { token: _this.props.token } : {})), (_this.props.language
-                        ? { user_language: _this.props.language }
-                        : {})), { ua: window.navigator.userAgent, is_cookie: window.navigator.cookieEnabled ? 1 : 0, cookie: document.cookie || "", screen_height: window.screen.availHeight, screen_width: window.screen.availWidth }),
+                    localinfo: __assign(__assign(__assign({ user: _this.props.user || "bcyg_user" }, (_this.props.token ? { token: _this.props.token } : {})), (_this.props.language ? { user_language: _this.props.language } : {})), { ua: window.navigator.userAgent, is_cookie: window.navigator.cookieEnabled ? 1 : 0, cookie: document.cookie || "", screen_height: window.screen.availHeight, screen_width: window.screen.availWidth }),
                 };
                 if (_this.props.onCatch) {
                     _this.props.onCatch(report);
@@ -169,9 +168,7 @@ var ErrorBoundary = /** @class */ (function (_super) {
                         stack = reason.stack;
                     }
                     // 防止上报日志时接口出错，造成死循环
-                    if (reason.config &&
-                        reason.config.url &&
-                        reason.config.url.includes("/log/web/report")) {
+                    if (reason.config && reason.config.url && reason.config.url.includes("/log/web/report")) {
                         return;
                     }
                 }
@@ -249,13 +246,13 @@ var ErrorBoundary = /** @class */ (function (_super) {
         return s < 10 ? "0" + s : s;
     };
     ErrorBoundary.prototype.render = function () {
-        var errorRender = this.props.errorRender;
-        if (this.state.hasError) {
-            return errorRender ? errorRender : React.createElement("h1", null, "Something went wrong.");
-        }
-        return this.props.children;
+        var _a = this.props, errorComponent = _a.errorComponent, children = _a.children;
+        return React.cloneElement(errorComponent, {
+            hasError: this.state.hasError,
+            children: children,
+        });
     };
     return ErrorBoundary;
-}(React.Component));
+}(React__default.Component));
 
 module.exports = ErrorBoundary;

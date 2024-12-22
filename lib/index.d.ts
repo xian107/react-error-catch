@@ -37,6 +37,7 @@ export interface ErrorCatcherState {
 }
 export interface ErrorCatcherProps extends React.Props<ErrorCatcher> {
   errorRender?: React.ReactNode //当 捕获到组件渲染错误时，降级渲染样式
+  errorComponent: any
   user?: string // 谁触发了错误。默认：bcyg_user
   token?: string // 用户token
   language?: string // 访问网站语言

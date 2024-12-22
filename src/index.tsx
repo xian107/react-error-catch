@@ -1,14 +1,6 @@
-import React from "react";
-import {
-  ErrorCatcherProps,
-  ErrorCatcherState,
-  ErrorInfo,
-  ReportError,
-} from "../index.d";
-class ErrorBoundary extends React.Component<
-  ErrorCatcherProps,
-  ErrorCatcherState
-> {
+import React, { cloneElement } from "react";
+import { ErrorCatcherProps, ErrorCatcherState, ErrorInfo, ReportError } from "../index.d";
+class ErrorBoundary extends React.Component<ErrorCatcherProps, ErrorCatcherState> {
   timeout: any = null;
   selfError = "自身边界错误";
   // 过滤日志
@@ -60,17 +52,11 @@ class ErrorBoundary extends React.Component<
 
   componentWillUnmount() {
     window.removeEventListener("error", this.catchError, true);
-    window.removeEventListener(
-      "unhandledrejection",
-      this.catchRejectEvent,
-      true
-    );
+    window.removeEventListener("unhandledrejection", this.catchRejectEvent, true);
   }
 
   beforeFilter = (error: ErrorInfo): boolean => {
-    const judge = this.stableMessage.concat(
-      this.props.filters ? this.props.filters : []
-    );
+    const judge = this.stableMessage.concat(this.props.filters ? this.props.filters : []);
     if (error.msg && error.msg.includes("failed.n(timeout:")) {
       return true;
     }
@@ -122,9 +108,7 @@ class ErrorBoundary extends React.Component<
         localinfo: {
           user: this.props.user || "bcyg_user",
           ...(this.props.token ? { token: this.props.token } : {}),
-          ...(this.props.language
-            ? { user_language: this.props.language }
-            : {}),
+          ...(this.props.language ? { user_language: this.props.language } : {}),
           ua: window.navigator.userAgent,
           is_cookie: window.navigator.cookieEnabled ? 1 : 0,
           cookie: document.cookie || "",
@@ -180,11 +164,7 @@ class ErrorBoundary extends React.Component<
           stack = reason.stack;
         }
         // 防止上报日志时接口出错，造成死循环
-        if (
-          reason.config &&
-          reason.config.url &&
-          reason.config.url.includes("/log/web/report")
-        ) {
+        if (reason.config && reason.config.url && reason.config.url.includes("/log/web/report")) {
           return;
         }
       }
@@ -226,11 +206,12 @@ class ErrorBoundary extends React.Component<
   };
 
   render() {
-    const { errorRender } = this.props;
-    if (this.state.hasError) {
-      return errorRender ? errorRender : <h1>Something went wrong.</h1>;
-    }
-    return this.props.children;
+    const { errorComponent, children } = this.props;
+
+    return cloneElement(errorComponent, {
+      hasError: this.state.hasError,
+      children,
+    });
   }
 }
 

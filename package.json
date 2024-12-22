@@ -1,6 +1,6 @@
 {
   "name": "react-error-catch",
-  "version": "1.0.18",
+  "version": "1.0.23",
   "description": "react error catch!",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
